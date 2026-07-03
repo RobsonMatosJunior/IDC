@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { db } from '../db';
 import { authenticate } from '../middleware/auth';
 import { audit } from '../lib/audit';
+import { asyncHandler } from '../lib/asyncHandler';
 import { User } from '../types';
 
 const router = Router();
@@ -16,7 +17,7 @@ function signToken(user: User): string {
   );
 }
 
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password } = req.body ?? {};
   if (!name || !email || !password) {
     res.status(400).json({ error: 'name, email e password são obrigatórios' });
@@ -40,9 +41,9 @@ router.post('/register', async (req: Request, res: Response) => {
     }
     throw err;
   }
-});
+}));
 
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body ?? {};
   if (!email || !password) {
     res.status(400).json({ error: 'email e password são obrigatórios' });
@@ -58,14 +59,14 @@ router.post('/login', async (req: Request, res: Response) => {
 
   await audit(user.id, 'user.login', 'user', user.id, {}, req.ip);
   res.json({ token: signToken(user), user: { id: user.id, name: user.name, email: user.email, role: user.role } });
-});
+}));
 
 router.get('/me', authenticate, (req: Request, res: Response) => {
   const { id, name, email, role } = req.user!;
   res.json({ id, name, email, role });
 });
 
-router.post('/change-password', authenticate, async (req: Request, res: Response) => {
+router.post('/change-password', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { currentPassword, newPassword } = req.body ?? {};
   if (!currentPassword || !newPassword) {
     res.status(400).json({ error: 'currentPassword e newPassword são obrigatórios' });
@@ -85,6 +86,6 @@ router.post('/change-password', authenticate, async (req: Request, res: Response
   );
   await audit(user.id, 'user.change_password', 'user', user.id, {}, req.ip);
   res.json({ token: signToken(rows[0]) });
-});
+}));
 
 export default router;

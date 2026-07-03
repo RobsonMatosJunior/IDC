@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../db';
+import { asyncHandler } from './asyncHandler';
 import { FeatureFlag, FeatureFlagOverride, Role } from '../types';
 
 function hashPercent(userId: string): number {
@@ -26,7 +27,7 @@ export async function isFeatureEnabled(key: string, userId: string, role: Role):
 }
 
 export function requireFeature(key: string) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  return asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     const user = req.user;
     if (!user) {
       res.status(401).json({ error: 'Missing token' });
@@ -38,5 +39,5 @@ export function requireFeature(key: string) {
       return;
     }
     next();
-  };
+  });
 }

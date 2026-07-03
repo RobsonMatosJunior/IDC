@@ -5,13 +5,14 @@ import { authenticate, requireRole } from '../middleware/auth';
 import { validateUUID } from '../lib/validateUUID';
 import { uniqueSlug } from '../lib/slugify';
 import { audit } from '../lib/audit';
+import { asyncHandler } from '../lib/asyncHandler';
 import { Idea, IdeaType } from '../types';
 
 const router = Router();
 const IDEA_TYPES: ReadonlySet<string> = new Set<IdeaType>(['game', 'story']);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
   const { type } = req.query;
   const conditions = ["status = 'published'"];
   const params: unknown[] = [];
@@ -30,17 +31,17 @@ router.get('/', async (req: Request, res: Response) => {
     params
   );
   res.json(rows);
-});
+}));
 
-router.get('/mine', authenticate, async (req: Request, res: Response) => {
+router.get('/mine', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { rows } = await db.query<Idea>(
     'SELECT * FROM ideas WHERE author_id = $1 ORDER BY created_at DESC',
     [req.user!.id]
   );
   res.json(rows);
-});
+}));
 
-router.get('/:idOrSlug', async (req: Request, res: Response) => {
+router.get('/:idOrSlug', asyncHandler(async (req: Request, res: Response) => {
   const { idOrSlug } = req.params;
   const field = UUID_RE.test(idOrSlug) ? 'id' : 'slug';
   const { rows } = await db.query<Idea>(`SELECT * FROM ideas WHERE ${field} = $1`, [idOrSlug]);
@@ -49,9 +50,9 @@ router.get('/:idOrSlug', async (req: Request, res: Response) => {
     return;
   }
   res.json(rows[0]);
-});
+}));
 
-router.post('/', authenticate, async (req: Request, res: Response) => {
+router.post('/', authenticate, asyncHandler(async (req: Request, res: Response) => {
   const { type, title, summary, content } = req.body ?? {};
   if (!IDEA_TYPES.has(type) || !title || !content) {
     res.status(400).json({ error: 'type, title e content são obrigatórios' });
@@ -68,9 +69,9 @@ router.post('/', authenticate, async (req: Request, res: Response) => {
   const idea = rows[0];
   await audit(req.user!.id, 'idea.create', 'idea', idea.id, { type, title }, req.ip);
   res.status(201).json(idea);
-});
+}));
 
-router.patch('/:id', authenticate, validateUUID(), async (req: Request, res: Response) => {
+router.patch('/:id', authenticate, validateUUID(), asyncHandler(async (req: Request, res: Response) => {
   const { rows: existingRows } = await db.query<Idea>('SELECT * FROM ideas WHERE id = $1', [req.params.id]);
   const existing = existingRows[0];
   if (!existing) {
@@ -100,9 +101,9 @@ router.patch('/:id', authenticate, validateUUID(), async (req: Request, res: Res
   );
   await audit(req.user!.id, status === 'published' ? 'idea.publish' : 'idea.update', 'idea', req.params.id, {}, req.ip);
   res.json(rows[0]);
-});
+}));
 
-router.delete('/:id', authenticate, validateUUID(), async (req: Request, res: Response) => {
+router.delete('/:id', authenticate, validateUUID(), asyncHandler(async (req: Request, res: Response) => {
   const { rows: existingRows } = await db.query<Idea>('SELECT * FROM ideas WHERE id = $1', [req.params.id]);
   const existing = existingRows[0];
   if (!existing) {
@@ -117,6 +118,6 @@ router.delete('/:id', authenticate, validateUUID(), async (req: Request, res: Re
   await db.query('DELETE FROM ideas WHERE id = $1', [req.params.id]);
   await audit(req.user!.id, 'idea.delete', 'idea', req.params.id, {}, req.ip);
   res.status(204).send();
-});
+}));
 
 export default router;

@@ -5,19 +5,20 @@ import { authenticate } from '../middleware/auth';
 import { validateUUID } from '../lib/validateUUID';
 import { requireFeature } from '../lib/featureFlags';
 import { audit } from '../lib/audit';
+import { asyncHandler } from '../lib/asyncHandler';
 import { Comment } from '../types';
 
 const router = Router();
 
-router.get('/idea/:id', validateUUID(), async (req: Request, res: Response) => {
+router.get('/idea/:id', validateUUID(), asyncHandler(async (req: Request, res: Response) => {
   const { rows } = await db.query<Comment>(
     'SELECT * FROM comments WHERE idea_id = $1 ORDER BY created_at ASC',
     [req.params.id]
   );
   res.json(rows);
-});
+}));
 
-router.post('/idea/:id', authenticate, validateUUID(), requireFeature('idea_comments'), async (req: Request, res: Response) => {
+router.post('/idea/:id', authenticate, validateUUID(), requireFeature('idea_comments'), asyncHandler(async (req: Request, res: Response) => {
   const { body } = req.body ?? {};
   if (!body) {
     res.status(400).json({ error: 'body é obrigatório' });
@@ -31,9 +32,9 @@ router.post('/idea/:id', authenticate, validateUUID(), requireFeature('idea_comm
   const comment = rows[0];
   await audit(req.user!.id, 'comment.create', 'comment', comment.id, { idea_id: req.params.id }, req.ip);
   res.status(201).json(comment);
-});
+}));
 
-router.delete('/:id', authenticate, validateUUID(), async (req: Request, res: Response) => {
+router.delete('/:id', authenticate, validateUUID(), asyncHandler(async (req: Request, res: Response) => {
   const { rows: existingRows } = await db.query<Comment>('SELECT * FROM comments WHERE id = $1', [req.params.id]);
   const existing = existingRows[0];
   if (!existing) {
@@ -48,6 +49,6 @@ router.delete('/:id', authenticate, validateUUID(), async (req: Request, res: Re
   await db.query('DELETE FROM comments WHERE id = $1', [req.params.id]);
   await audit(req.user!.id, 'comment.delete', 'comment', req.params.id, {}, req.ip);
   res.status(204).send();
-});
+}));
 
 export default router;

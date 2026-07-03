@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { db } from '../db';
+import { asyncHandler } from '../lib/asyncHandler';
 import { JwtPayload, Role, User } from '../types';
 
 declare global {
@@ -12,7 +13,7 @@ declare global {
   }
 }
 
-export async function authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
+export const authenticate = asyncHandler(async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const header = req.headers.authorization;
   const token = header?.startsWith('Bearer ') ? header.slice(7) : null;
   if (!token) {
@@ -30,10 +31,14 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
     }
     req.user = user;
     next();
-  } catch {
-    res.status(401).json({ error: 'Invalid token' });
+  } catch (err) {
+    if (err instanceof jwt.JsonWebTokenError || err instanceof jwt.TokenExpiredError) {
+      res.status(401).json({ error: 'Invalid token' });
+      return;
+    }
+    throw err;
   }
-}
+});
 
 export function requireRole(...roles: Role[]) {
   return (req: Request, res: Response, next: NextFunction): void => {
