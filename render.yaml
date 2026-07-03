@@ -4,7 +4,7 @@ services:
     runtime: node
     rootDir: api
     plan: free
-    buildCommand: npm install --include=dev && npm run build
+    buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
