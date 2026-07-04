@@ -1,6 +1,6 @@
 import { Link, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import logo from '../img/logo.png';
+import logo from '../Img/logo.png';
 
 export default function Layout() {
   const { user, logout } = useAuth();
