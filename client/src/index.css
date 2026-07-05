@@ -3,6 +3,45 @@
 @tailwind utilities;
 
 
-.butonHover:hover {
-    background-color: #091638;
+/* style logo */
+
+.logoSize {
+    height: 80px;
+}
+
+/* style inputs text */
+
+.textInp {
+    transition: 0.5s;
+    border: none;
+    outline: none;    
+    border-radius: 12px;
+}
+
+.textInp:focus {
+    background-color: rgba(255, 255, 255, 0.253);
+    border: none;
+    outline: none;
+}
+
+.btn-create {
+    border-radius: 12px;
+    width: 140px;
+    margin: 0px auto;
+    transition: .5s;
+}
+
+.btn-create:hover {
+    background-color: #382fe6;
+}
+
+.btns-Home {
+    padding: 5px 10px;
+    transition: .5s;
+    border-radius: 12px;
+}
+
+.btns-Home:hover {
+    background-color: #382fe6;
+    border-radius: 12px;
 }

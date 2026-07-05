@@ -1,6 +1,6 @@
 import { Link, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import logo from '../img/logo.png';
+import logo from '../img/logo1.png';
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -9,11 +9,10 @@ export default function Layout() {
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2 text-lg font-bold">
-          <img src={logo} alt="IDC" className="w-8 h-8" />
-          IDC
+          <img src={logo} alt="IDC" className="logoSize" />
         </Link>
         <div className="flex items-center gap-4 text-sm">
-          <Link to="/">Explorar</Link>
+          <Link to="/" className='btns-Home'>Explorar</Link>
           {user && <Link to="/new">Publicar</Link>}
           {user && <Link to="/mine">Minhas ideias</Link>}
           {user?.role === 'admin' && <Link to="/admin/features">Features</Link>}
@@ -22,8 +21,8 @@ export default function Layout() {
             <button onClick={logout} className="text-red-400">Sair ({user.name})</button>
           ) : (
             <>
-              <Link to="/login">Entrar</Link>
-              <Link to="/register">Cadastrar</Link>
+              <Link to="/login" className="btns-Home">Entrar</Link>
+              <Link to="/register" className='btns-Home'>Cadastrar</Link>
             </>
           )}
         </div>

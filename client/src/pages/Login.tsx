@@ -22,19 +22,19 @@ export default function Login() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-sm mx-auto flex flex-col gap-3">
-      <h1 className="text-xl font-bold mb-2">Entrar</h1>
+      <h1 className="text-xl font-bold mb-2 text-center">Entrar</h1>
       {error && <p className="text-red-400 text-sm">{error}</p>}
       <input
         type="email" required placeholder="Email" value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="bg-gray-900 border border-gray-700 rounded px-3 py-2"
+        className="bg-gray-900 textInp rounded px-3 py-2"
       />
       <input
         type="password" required placeholder="Senha" value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="bg-gray-900 border border-gray-700 rounded px-3 py-2"
+        className="bg-gray-900 textInp rounded px-3 py-2"
       />
-      <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 rounded py-2">Entrar</button>
+      <button type="submit" className="bg-indigo-600 btn-create py-2">Entrar</button>
     </form>
   );
 }
