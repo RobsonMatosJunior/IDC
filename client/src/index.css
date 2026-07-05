@@ -29,10 +29,12 @@
     width: 140px;
     margin: 0px auto;
     transition: .5s;
+    margin-top: 25px;
 }
 
 .btn-create:hover {
     background-color: #382fe6;
+    box-shadow: 0px 0px 20px 8px #382fe644;
 }
 
 .btns-Home {
